@@ -7,7 +7,7 @@
                    connect_helper/2,
                    connect/1,
                    connect/2,
-                   send_to_sever/1,
+                   send_to_server/1,
                    enable_debug/0,
                    disable_debug/0
                  ]).
@@ -127,7 +127,7 @@ inc_auth_count :-
     B is A + 1,
     asserta(auth_count(B)).
 
-message_handler(ping(Reply)) :- send_to_sever(pong(Reply)).
+message_handler(ping(Reply)) :- send_to_server(pong(Reply)).
 message_handler(notice(_, 'AUTH', _)) :-
     auth_count(3),
     register_nick,
@@ -144,16 +144,16 @@ message_handler(privmsg(_, _, Chan, 'muddy: uptime')) :-
     Min is Diff // 60 mod 60,
     Hour is Diff // 3600 mod 24,
     Day is Diff // 84600,
-    format(atom(String), "~d days, ~d  hours, ~d mins and ~d seconds~n",
+    format(atom(String), "~dd ~dh ~dm ~ds~n",
            [ Day, Hour, Min, Sec ]),
-    send_to_sever(privmsg(Chan, String)).
+    send_to_server(privmsg(Chan, String)).
 
     
-register_nick :- send_to_sever(nick(muddy)).
-register_user :- send_to_sever(user(muddy, 'Muddy Bot')).
-join_bots :- send_to_sever(join('#bots')).
+register_nick :- send_to_server(nick(muddy)).
+register_user :- send_to_server(user(muddy, 'Muddy Bot')).
+join_bots :- send_to_server(join('#bots')).
 
-send_to_sever(Msg) :- 
+send_to_server(Msg) :- 
     get_outstream(OutStream),
     server_message(Msg, SMsg),
     debug_message_('sending ~w', SMsg),
@@ -185,7 +185,7 @@ construct_server_message(join(Chan)) -->
     "JOIN ", SChan, "\n".
 construct_server_message(privmsg(Target, Message)) -->
     { atom_codes(Target, STarget), atom_codes(Message, SMessage) },
-    "PRIVMSG ", STarget, " ", SMessage, "\n".
+    "PRIVMSG ", STarget, " :", SMessage, "\n".
 
 server_msg_handler(ping(Reply)) -->
     "PING :", not_nl(SReply), eat_nl, { atom_codes(Reply, SReply) }.
