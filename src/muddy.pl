@@ -147,7 +147,8 @@ message_handler(privmsg(_, _, Chan, 'muddy: uptime')) :-
     format(atom(String), "~dd ~dh ~dm ~ds~n",
            [ Day, Hour, Min, Sec ]),
     send_to_server(privmsg(Chan, String)).
-
+message_handler(privmsg(_, _, Chan, 'muddy: what do you do?')) :-
+    send_to_server(privmsg(Chan, 'I am a !!FUN!! MUD, please try me!')).
     
 register_nick :- send_to_server(nick(muddy)).
 register_user :- send_to_server(user(muddy, 'Muddy Bot')).
