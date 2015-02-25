@@ -119,7 +119,7 @@ eat_nl(_, R, R).
 handle_message(Msg) :- message_handler(Msg).
 handle_message(Msg) :- throw(no_message_handler(Msg)).
 
-handle_error(Error) :- debug_message('error: ~w~n', [Error]).
+handle_error(Error) :- debug_message('error: ~w', [Error]).
 
 inc_auth_count :-
     auth_count(A),

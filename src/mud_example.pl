@@ -36,6 +36,10 @@ handle_privmsg(Nick, User, register) :-
 
 handle_privmsg(Nick, User, Msg) :-
     atom_concat('select class ', _, Msg),
+    \+ user(User, _), !,
+    send_to_server(Nick, 'you have not registered').
+handle_privmsg(Nick, User, Msg) :-
+    atom_concat('select class ', _, Msg),
     user(User, X), X \= false, !,
     send_to_server(Nick, 'class already selected').
 handle_privmsg(Nick, User, Msg) :-
@@ -56,9 +60,16 @@ handle_privmsg(Nick, _, help) :-
     maplist(send_list_elem(Nick), [ help,
                                     register,
                                     classlist,
-                                    'select class <class>'
+                                    'me {RC}',
+                                    'select class <class> {R}',
+                                    '',
+                                    '{C} = have selected a class',
+                                    '{R} = have registered'
                                   ]).
 
+handle_privmsg(Nick, User, me) :-
+    \+ user(User, _), !,
+    send_to_server(Nick, 'you have not registered').
 handle_privmsg(Nick, User, me) :-
     user(User, false), !,
     send_to_server(Nick, 'you have not selected a class').
@@ -75,11 +86,3 @@ handle_privmsg(Nick, User, me) :-
                                     DexMsg,
                                     IntMsg,
                                     ConMsg ]).
-
-handle_privmsg(Nick, User, _) :-
-    user(User, _), !,
-    send_to_server(Nick, 'not registered').
-
-handle_privmsg(Nick, _, Msg) :-
-    atom_concat('Unknown message: ', Msg, Str),
-    send_to_server(Nick, Str).
