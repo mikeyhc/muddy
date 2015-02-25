@@ -7,6 +7,7 @@
                    connect_helper/2,
                    connect/1,
                    connect/2,
+                   disconnect/0,
                    send_to_server/1,
                    enable_debug/0,
                    disable_debug/0

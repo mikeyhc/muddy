@@ -27,6 +27,56 @@ send_list_elem(Chan, Msg) :-
     atom_concat('    ', Msg, Str),
     send_to_server(Chan, Str).
 
+dispatch(Nick, User, Msg) :-
+    dispatch_list(DL),
+    dispatch_option(Msg, DL, Option),
+    check_options(Nick, User, Options),
+    call(Option, Nick, User, Msg).
+
+check_options(_, _, option(_, _)).
+check_options(Nick, User, option(_, _, OptList)) :- 
+    check_opt_list(Nick, User, OptList).
+check_options(Nick, User, option(_, _, OptList, _)) :-
+    check_opt_list(Nick, User, OptList).
+
+check_opt_list(_, _, []).
+check_opt_list(Nick, User, [H|T]) :- 
+    check_option_value(Nick, User, H), !,
+    check_opt_list(T).
+
+% not registered
+check_option_value(_, User, not_registered) :- \+ user(User, _), !.
+check_option_value(Nick, _, not_registered) :-
+    send_to_server(Nick, 'you must not be registered to do that'), !.
+
+% registered
+check_option_value(_, User, registered) :- user(User, _), !.
+check_option_value(Nick, _, registered) :- 
+    send_to_server(Nick, 'you must be registered to do that'), !.
+
+% no class
+check_option_value(_, User, no_class) :- user(User, C), C = false, !.
+check_option_value(_, User, no_class) :- \+ user(User, _), !,
+    send_to_server(Nick, 'you must be registered to do that').
+check_option_value(Nick, _, no_class) :-
+    send_to_server(Nick, 'you must not have a class to do that').
+
+% class
+check_option_value(_, User, class) :- user(User, C), C \= false, !.
+check_option_value(Nick, _, class) :- \+ user(User, _), !,
+    send_to_server(Nick, 'you must be registered to do that').
+check_option_value(Nick, _, class) :-
+    send_to_server(Nick, 'you must have a class to do that').
+
+dispatch_list([ option(register, register, [ not_registered ]),
+                option(prefix('select class '), select_class, 
+                       [ no_class, registered ], 'select class <class>'),
+                option(classlist, classslist),
+                option(help, help),
+                option(me, me, [ class ])
+              ]).
+
+
 handle_privmsg(Nick, User, register) :-
     user(User, _), !,
     send_to_server(Nick, 'already registered').
